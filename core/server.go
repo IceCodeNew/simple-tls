@@ -38,16 +38,9 @@ func DoServer(l net.Listener, certificates []tls.Certificate, dst string, sendPa
 		}
 
 		go func() {
-			clientTLSConn := tls.Server(clientRawConn, tlsConfig)
-			defer clientTLSConn.Close()
+			defer clientRawConn.Close()
 
-			// check client conn before dialing dst
-			if err := tls13HandshakeWithTimeout(clientTLSConn, time.Second*5); err != nil {
-				log.Printf("ERROR: DoServer: %s, tls13HandshakeWithTimeout: %v", clientRawConn.RemoteAddr(), err)
-				return
-			}
-
-			if err := handleClientConn(clientTLSConn, sendPaddingData, dst, timeout); err != nil {
+			if err := handleClientConn(clientRawConn, sendPaddingData, dst, timeout); err != nil {
 				log.Printf("ERROR: DoServer: %s, handleClientConn: %v", clientRawConn.RemoteAddr(), err)
 				return
 			}
